@@ -73,8 +73,62 @@ public class BarGraphActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bar_graph);
-        //creating an Timeseries for Transactions
 
+        //If reading from a local file
+        /**StringBuffer sb = new StringBuffer();
+         BufferedReader br = null;
+         try {
+         br = new BufferedReader(new InputStreamReader(getAssets().open("expenses.json")));
+         String temp;
+         while ((temp = br.readLine()) != null) {
+         sb.append(temp);
+         }
+         br.close();
+
+         } catch (IOException e) {
+         e.printStackTrace();
+         }
+         try {
+         JSONArray result = new JSONArray(sb.toString());
+         JSONObject jsonObject = null;
+
+         //loop through the array and break the JSONObject into String
+         for (int i = 0; i < result.length(); i++) {
+         jsonObject = result.getJSONObject(i);
+         amount = jsonObject.getString(TAG_AMOUNT);
+         desc = jsonObject.getString(TAG_DESC);
+         type = jsonObject.getString(TAG_TYPE);
+         //getting date as string from database
+         date = jsonObject.getString(TAG_DATE);
+         //System.out.println(amount + date);
+         SimpleDateFormat readFormat = new SimpleDateFormat("EEEE, MMMM dd, yyyy hh:mm a");
+
+         //check it date string for null or empty string or else it will give Unparseable date: "" (at offset 0) error
+         if (!date.equalsIgnoreCase("")) {
+         try {
+         Date dt = readFormat.parse(date);  //parse the date string in the read format
+         Log.d("Date: ", date);
+         double amt = Double.valueOf(amount.replace(",", ""));
+         //System.out.println(amt);
+         Log.d("Amount: ", String.valueOf(amt));
+
+         setupChart();
+         transactionSeries.add(dt.getTime(),amt);
+         mChart.repaint();
+         } catch (ParseException e) {
+         e.printStackTrace();
+         }
+         } else {
+         return;
+
+         }
+         }
+
+         } catch (JSONException e) {
+         e.printStackTrace();
+         }**/
+
+        //creating an Timeseries for Transactions
         transactionSeries = new TimeSeries("Transactions");
 
         //start plotting chart
