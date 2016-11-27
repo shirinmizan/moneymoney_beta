@@ -19,7 +19,13 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import android.widget.ExpandableListView;
@@ -214,6 +220,8 @@ public class ExpandableIncome extends AppCompatActivity {
                 List<String> descList5 = new ArrayList<String>();
                 List<String> descList6 = new ArrayList<String>();
                 List<String> descList7 = new ArrayList<String>();
+                final ArrayList<Date> datearray = new ArrayList<Date>();
+                final DateFormat sdf = new SimpleDateFormat("EEEE, MMMM dd");
 
                 for (int i = 0; i < result.length(); i++) {
                     jsonObject = result.getJSONObject(i);
@@ -230,6 +238,9 @@ public class ExpandableIncome extends AppCompatActivity {
                     type = jsonObject.getString(TAG_TYPE);
                     //getting date as string from database
                     date = jsonObject.getString(TAG_DATE);
+                    Date dt = sdf.parse(date);
+                    datearray.add(dt);
+
                     category = jsonObject.getString(TAG_CATEGORY);
 
                     //List<String> descList = new ArrayList<String>();
@@ -269,6 +280,21 @@ public class ExpandableIncome extends AppCompatActivity {
                         }
                     }
                 }
+
+                //sort date in asceding order
+               /* Collections.sort(datearray);
+                Log.d("sorted ascending", String.valueOf(datearray));*/
+
+                //sort date in descending order
+                Collections.sort(datearray, new Comparator<Date>() {
+                    @Override
+                    public int compare(Date o1, Date o2) {
+                        int res = (sdf.format(o2).compareTo(sdf.format(o1)));
+                        return res;
+                    }
+                });
+
+                Log.d("sorted desceding", String.valueOf(datearray));
                 Log.d("Header", String.valueOf(listDataHeader));
                 listDataChild.put(listDataHeader.get(0), descList);
                 listDataChild.put(listDataHeader.get(1), descList2);
@@ -279,11 +305,7 @@ public class ExpandableIncome extends AppCompatActivity {
                // listDataChild.put(listDataHeader.get(6), descList7);
 
 
-
-
-
-
-                     //System.out.println(amount + date);
+                //System.out.println(amount + date);
                      //SimpleDateFormat readFormat = new SimpleDateFormat("EEEE, MMMM dd, yyyy hh:mm a");
 
                      //check it date string for null or empty string or else it will give Unparseable date: "" (at offset 0) error
@@ -307,6 +329,8 @@ public class ExpandableIncome extends AppCompatActivity {
                         return;
                      }*/
                  } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (ParseException e) {
                 e.printStackTrace();
             }
         }
