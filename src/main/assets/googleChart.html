@@ -1,0 +1,38 @@
+<html>
+<head>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+
+       var jsonData = $.ajax({
+        url: 'file:///android_asset/expenses.json',
+        type: 'json',
+        }).done(function (results) {
+
+            var data = new google.visualization.DataTable(jsonData);
+            data.addColumn('amount', 'Amount');
+            data.addColumn('date', 'Date');
+
+            .$each(results, function (i, row){
+                data.addRow([
+                    (new Date(
+        }
+
+        var options = {
+          title: 'Truiton Performance',
+          hAxis: {title: 'Year', titleTextStyle: {color: 'red'}}
+          yAxis: {title: 'Amount', titleTextStyle: {color: 'red'}}
+        };
+
+        var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+    </script>
+</head>
+<body>
+<div id="chart_div" style="width: 1000px; height: 500px;"></div>
+<img style="padding: 0; margin: 0 0 0 330px; display: block;" src="truiton.png"/>
+</body>
+</html>

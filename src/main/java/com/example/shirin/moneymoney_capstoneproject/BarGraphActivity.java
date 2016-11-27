@@ -3,53 +3,45 @@ package com.example.shirin.moneymoney_capstoneproject;
 import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.FloatProperty;
 import android.util.Log;
-import android.util.Pair;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
-import com.google.gson.JsonParser;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.BarEntry;
 
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
-import org.achartengine.chart.BarChart;
 import org.achartengine.chart.PointStyle;
+import org.achartengine.chart.TimeChart;
 import org.achartengine.model.TimeSeries;
 import org.achartengine.model.XYMultipleSeriesDataset;
-import org.achartengine.model.XYSeries;
-import org.achartengine.renderer.SimpleSeriesRenderer;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 public class BarGraphActivity extends AppCompatActivity {
-
-    private GraphicalView mChart;
-    private TimeSeries transactionSeries;
-    private XYMultipleSeriesDataset dataset;
-    private XYSeriesRenderer transactionRenderer;
-    private XYMultipleSeriesRenderer multiRenderer;
 
     //JSON node name
     private static final String TAG_TYPE = "type";
@@ -66,121 +58,28 @@ public class BarGraphActivity extends AppCompatActivity {
     String date = null;
     String category = null;
     ProgressDialog pDialog;
+    List<BarEntry> entries = new ArrayList<BarEntry>();
+    BarDataSet dataset;
+    BarData barData;
+
     double amt;
     Date dt;
+    BarChart newBarChart;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bar_graph);
+        //id the chart layout
+        newBarChart = (BarChart) findViewById(R.id.chart_Container);
 
-        //If reading from a local file
-        /**StringBuffer sb = new StringBuffer();
-         BufferedReader br = null;
-         try {
-         br = new BufferedReader(new InputStreamReader(getAssets().open("expenses.json")));
-         String temp;
-         while ((temp = br.readLine()) != null) {
-         sb.append(temp);
-         }
-         br.close();
-
-         } catch (IOException e) {
-         e.printStackTrace();
-         }
-         try {
-         JSONArray result = new JSONArray(sb.toString());
-         JSONObject jsonObject = null;
-
-         //loop through the array and break the JSONObject into String
-         for (int i = 0; i < result.length(); i++) {
-         jsonObject = result.getJSONObject(i);
-         amount = jsonObject.getString(TAG_AMOUNT);
-         desc = jsonObject.getString(TAG_DESC);
-         type = jsonObject.getString(TAG_TYPE);
-         //getting date as string from database
-         date = jsonObject.getString(TAG_DATE);
-         //System.out.println(amount + date);
-         SimpleDateFormat readFormat = new SimpleDateFormat("EEEE, MMMM dd, yyyy hh:mm a");
-
-         //check it date string for null or empty string or else it will give Unparseable date: "" (at offset 0) error
-         if (!date.equalsIgnoreCase("")) {
-         try {
-         Date dt = readFormat.parse(date);  //parse the date string in the read format
-         Log.d("Date: ", date);
-         double amt = Double.valueOf(amount.replace(",", ""));
-         //System.out.println(amt);
-         Log.d("Amount: ", String.valueOf(amt));
-
-         setupChart();
-         transactionSeries.add(dt.getTime(),amt);
-         mChart.repaint();
-         } catch (ParseException e) {
-         e.printStackTrace();
-         }
-         } else {
-         return;
-
-         }
-         }
-
-         } catch (JSONException e) {
-         e.printStackTrace();
-         }**/
-
-        //creating an Timeseries for Transactions
-        transactionSeries = new TimeSeries("Transactions");
-
-        //start plotting chart
         new ChartTask().execute();
     }
 
     public void setupChart() {
 
-        //creating a dataset to hold each series
-        dataset = new XYMultipleSeriesDataset();
-        //adding transactionseries to the dataset
-        Log.d("Count Before", String.valueOf(transactionSeries.getItemCount()));
-        dataset.addSeries(transactionSeries);
-        Log.d("Dataset: ", String.valueOf(transactionSeries.getItemCount()));
 
-        //Creating a XYMultipleSeriesRenderer to customize transaction series
-        transactionRenderer = new XYSeriesRenderer();
-        transactionRenderer.setColor(Color.GREEN);
-        //transactionRenderer.setPointStyle(PointStyle.CIRCLE);
-        transactionRenderer.setFillPoints(true);
-        transactionRenderer.setLineWidth(4);
-        transactionRenderer.setDisplayChartValues(false);
-
-        // Creating a XYMultipleSeriesRenderer to customize the whole chart
-        multiRenderer = new XYMultipleSeriesRenderer();
-
-        multiRenderer.setChartTitle("Transaction Trends");
-        multiRenderer.setXTitle("Date");
-        multiRenderer.setYTitle("Amount");
-        //multiRenderer.setZoomButtonsVisible(true);
-
-        multiRenderer.setXAxisMin(0);
-        multiRenderer.setXAxisMax(10);
-
-        multiRenderer.setYAxisMin(0);
-        multiRenderer.setYAxisMax(10);
-
-        multiRenderer.setBarSpacing(2);
-
-        // Adding transactionRenderer to multipleRenderer
-        // Note: The order of adding dataseries to dataset and renderers to multipleRenderer
-        // should be same
-        multiRenderer.addSeriesRenderer(transactionRenderer);
-
-        // Getting a reference to LinearLayout of the bar graph activity Layout
-        LinearLayout chartContainer = (LinearLayout) findViewById(R.id.chart_container);
-
-        mChart = (GraphicalView) ChartFactory.getBarChartView(getBaseContext(), dataset, multiRenderer, BarChart.Type.DEFAULT);
-
-        // Adding the Line Chart to the LinearLayout
-        chartContainer.addView(mChart);
-    }
+}
 
     //reading from remote database. MongoDB on Node.js server
     private class ChartTask extends AsyncTask<String, String, String> {
@@ -188,10 +87,11 @@ public class BarGraphActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             pDialog = new ProgressDialog(BarGraphActivity.this);
-            pDialog.setMessage("Fetching data. Please wait...");
+            pDialog.setMessage("Loading data. Please wait...");
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(false);
             pDialog.show();
+           setupChart();
         }
 
         @Override
@@ -221,22 +121,23 @@ public class BarGraphActivity extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            //fetching data from db
-            try {
-                //get JSONObject from JSONArray of String
-                JSONArray result = new JSONArray();
-                JSONObject jsonObject = null;
-                //String[] values = new String[2];
-                //loop through the array and break the JSONObject into String
+            return null;
+        }
 
-                setupChart();
+        //grab data and plug it in the chart
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            pDialog.dismiss();
+            try {
+                JSONArray result = new JSONArray(s);
+                JSONObject jsonObject = null;
                 for (int i = 0; i < result.length(); i++) {
                     jsonObject = result.getJSONObject(i);
                     amount = jsonObject.getString(TAG_AMOUNT);
                     desc = jsonObject.getString(TAG_DESC);
                     type = jsonObject.getString(TAG_TYPE);
                     category = jsonObject.getString(TAG_CATEGORY);
-                    //getting date as string from database
                     date = jsonObject.getString(TAG_DATE);
                     //System.out.println(date);
                     //write it in the db in a different format like Wednesday, July 12, 2016 12:00 PM
@@ -247,78 +148,39 @@ public class BarGraphActivity extends AppCompatActivity {
                     if (!date.equalsIgnoreCase("")) {
                         try {
                             dt = readFormat.parse(date);  //parse the date string in the read format
-                            //String dtStr = writeFormat.format(dt);
-                            //dt = writeFormat.parse(dtStr);
-                            //System.out.println(dt);
-                            Log.d("Date: ", date);
                             amt = Double.valueOf(amount.replace(",", ""));
-                            //System.out.println(amt);
-                            Log.d("Amount: ", java.lang.String.valueOf(amt));
-                            //Log.d("Count: ", java.lang.String.valueOf((transactionSeries.getItemCount())));
-                            transactionSeries.add(dt, amt);
-                            // Log.d("Dataset After ", String.valueOf(transactionSeries.getItemCount()));
+
+                            entries.add(new BarEntry(Float.valueOf(String.valueOf(date)), Float.valueOf(String.valueOf(amt))));
+
                         }
                         catch (ParseException e) {
                             e.printStackTrace();
                         }
-                    }
-                    else {
-                        return null;
+
+                    } else {
+
                     }
                 }
+
+                dataset = new BarDataSet(entries, "Transaction");
+                dataset.setColor(32);
+                dataset.setValueTextColor(12);
+                barData = new BarData(dataset);
+                newBarChart.setData(barData);
+                newBarChart.invalidate();
+
             }
             catch (JSONException e) {
                 e.printStackTrace();
             }
-            return null;
-        }
 
-        //grab data and plug it in the chart
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            pDialog.dismiss();
-            setupChart();
-            dataset.addSeries(transactionSeries);
-            //Creating a XYMultipleSeriesRenderer to customize transaction series
-            transactionRenderer = new XYSeriesRenderer();
-            transactionRenderer.setColor(Color.GREEN);
-            //transactionRenderer.setPointStyle(PointStyle.CIRCLE);
-            transactionRenderer.setFillPoints(true);
-            transactionRenderer.setLineWidth(4);
-            transactionRenderer.setDisplayChartValues(false);
 
-            // Creating a XYMultipleSeriesRenderer to customize the whole chart
-            multiRenderer = new XYMultipleSeriesRenderer();
-            multiRenderer.setChartTitle("Transaction Trends");
-            multiRenderer.setXTitle("Date");
-            multiRenderer.setYTitle("Amount");
-            //multiRenderer.setZoomButtonsVisible(true);
-
-            multiRenderer.setXAxisMin(0);
-            multiRenderer.setXAxisMax(10);
-
-            multiRenderer.setYAxisMin(0);
-            multiRenderer.setYAxisMax(10);
-
-            multiRenderer.setBarSpacing(2);
-
-            // Adding transactionRenderer to multipleRenderer
-            // Note: The order of adding dataseries to dataset and renderers to multipleRenderer
-            // should be same
-            multiRenderer.addSeriesRenderer(transactionRenderer);
-
-            // Getting a reference to LinearLayout of the bar graph activity Layout
-            LinearLayout chartContainer = (LinearLayout) findViewById(R.id.chart_container);
-
-            mChart = (GraphicalView) ChartFactory.getBarChartView(getBaseContext(), dataset, multiRenderer, BarChart.Type.DEFAULT);
-
-            // Adding the Line Chart to the LinearLayout
-            // chartContainer.addView(mChart);
-            if(mChart != null){
-                mChart.refreshDrawableState();
-                mChart.repaint();
-            }
         }
     }
+
+
+
 }
+
+
+

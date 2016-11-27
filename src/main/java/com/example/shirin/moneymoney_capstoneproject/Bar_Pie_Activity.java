@@ -52,10 +52,7 @@ public class Bar_Pie_Activity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onClick(View v) {
         if (v == bar) {
-            startActivity(new Intent(getBaseContext(), BarGraphActivity.class));
-        }
-        if (v == pie) {
-            startActivity(new Intent(getBaseContext(), PieActivity.class));
+            //startActivity(new Intent(getBaseContext(), BarGraphActivity.class));
         }
     }
 
