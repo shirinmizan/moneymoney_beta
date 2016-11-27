@@ -73,16 +73,13 @@ public class BarGraphActivity extends AppCompatActivity {
         //id the chart layout
         newBarChart = (BarChart) findViewById(R.id.chart_Container);
 
-        new ChartTask().execute();
+        //new ChartTask().execute();
+
+        preparedData();
     }
 
-    public void setupChart() {
-
-
-}
-
     //reading from remote database. MongoDB on Node.js server
-    private class ChartTask extends AsyncTask<String, String, String> {
+   /* private class ChartTask extends AsyncTask<String, String, String> {
 
         protected void onPreExecute() {
             super.onPreExecute();
@@ -91,10 +88,10 @@ public class BarGraphActivity extends AppCompatActivity {
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(false);
             pDialog.show();
-           setupChart();
-        }
+            setupChart();
+        }*/
 
-        @Override
+       /* @Override
         protected String doInBackground(String... String) {
             try {
                 URL url = new URL(FETCH_URL);
@@ -122,15 +119,30 @@ public class BarGraphActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             return null;
-        }
+        }*/
 
         //grab data and plug it in the chart
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            pDialog.dismiss();
+       // @Override
+       // protected void onPostExecute(String s) {
+    public void preparedData(){
+
+        StringBuffer sb = new StringBuffer();
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new InputStreamReader(getAssets().open("expenses.json")));
+            String temp;
+            while ((temp = br.readLine()) != null) {
+                sb.append(temp);
+            }
+            br.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+            //super.onPostExecute(s);
+           // pDialog.dismiss();
             try {
-                JSONArray result = new JSONArray(s);
+                JSONArray result = new JSONArray(sb.toString()); //when reading from file use sb.toString() as the string parameter
                 JSONObject jsonObject = null;
                 for (int i = 0; i < result.length(); i++) {
                     jsonObject = result.getJSONObject(i);
@@ -180,7 +192,7 @@ public class BarGraphActivity extends AppCompatActivity {
 
 
 
-}
+
 
 
 
